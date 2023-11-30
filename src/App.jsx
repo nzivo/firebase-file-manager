@@ -14,22 +14,24 @@ function App() {
   const user = useAuth();
 
   return (
-    <Router>
-      <Routes>
-        {/* Redirect to upload-file if user exists in local storage */}
-        {user ? (
-          <>
-            <Route path="/" element={<Navigate to="/upload-file" />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/upload-file" element={<FileUpload />} />
-          </>
-        ) : (
-          <Route path="/signup" element={<SignUp />} />
-        )}
-        <Route path="*" element={<SignIn />} />
-        <Route path="/signin" element={<SignIn />} />
-      </Routes>
-    </Router>
+    <div className="w-full">
+      <Router>
+        <Routes>
+          {/* Redirect to upload-file if user exists in local storage */}
+          {user ? (
+            <>
+              <Route path="/" element={<Navigate to="/upload-file" />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/upload-file" element={<FileUpload />} />
+            </>
+          ) : (
+            <Route path="/signup" element={<SignUp />} />
+          )}
+          <Route path="*" element={<SignIn />} />
+          <Route path="/signin" element={<SignIn />} />
+        </Routes>
+      </Router>
+    </div>
   );
 }
 

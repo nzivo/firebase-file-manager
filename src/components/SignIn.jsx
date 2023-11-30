@@ -2,15 +2,21 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { LoadingOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
+import LanguageToggle from "./LanguageToggle";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async () => {
     try {
+      setIsLoading(true);
       const auth = getAuth();
       const response = await signInWithEmailAndPassword(auth, email, password);
       console.log(response);
@@ -18,17 +24,23 @@ const SignIn = () => {
       const uid = response.user.uid;
       // If sign-in is successful, store the session in local storage and redirect
       localStorage.setItem("user", JSON.stringify({ email, uid }));
-      navigate("/upload-file");
+      navigate("/");
+      setIsLoading(false);
     } catch (error) {
       setError(error.message);
     }
   };
 
   return (
-    <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-lg">
+    <div className="mx-auto w-full px-4 py-16 sm:px-6 lg:px-8">
+      <div className="flex justify-between items-center mb-4">
+        {/* Move LanguageToggle to the right */}
+        <div className="flex-grow"></div>
+        <LanguageToggle />
+      </div>
+      <div className="mx-auto w-full">
         <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl">
-          Get productive again
+          {t("getProductive")}
         </h1>
 
         <p className="mx-auto mt-4 max-w-md text-center text-gray-500">
@@ -37,9 +49,7 @@ const SignIn = () => {
         </p>
 
         <form className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8">
-          <p className="text-center text-lg font-medium">
-            Sign in to your account
-          </p>
+          <p className="text-center text-lg font-medium">{t("signInAcc")}</p>
 
           <div>
             <label htmlFor="email" className="sr-only">
@@ -50,7 +60,7 @@ const SignIn = () => {
               <input
                 type="email"
                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-                placeholder="Enter email"
+                placeholder={t("enterEmail")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -85,7 +95,7 @@ const SignIn = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-                placeholder="Enter password"
+                placeholder={t("enterPassword")}
               />
 
               <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
@@ -118,13 +128,13 @@ const SignIn = () => {
             onClick={handleSignIn}
             className="block w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white"
           >
-            Sign in
+            {isLoading ? <LoadingOutlined /> : t("signIn")}
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            No account?
+            {t("noAccount")}
             <a className="underline" href="/signup">
-              Sign up
+              {t("signUp")}
             </a>
           </p>
         </form>

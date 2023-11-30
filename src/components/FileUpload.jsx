@@ -3,11 +3,15 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { PDFDocument } from "pdf-lib";
+import mammoth from "mammoth";
 import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 import Header from "./Header";
 import AsideBar from "./AsideBar";
 import { List, Grid } from "../assets";
+import { useTranslation } from "react-i18next";
+import { LoadingOutlined } from "@ant-design/icons";
+import MobileNav from "./MobileNav";
 
 const FileUpload = ({ onFileUpload }) => {
   const [file, setFile] = useState(null);
@@ -16,6 +20,9 @@ const FileUpload = ({ onFileUpload }) => {
   const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const [isGridView, setIsGridView] = useState(true);
+  const { t, i18n } = useTranslation();
+  const [isLoading, setIsLoading] = useState(false);
+  const isHebrew = i18n.language === "he";
 
   useEffect(() => {
     // Retrieve userId from localStorage when the component mounts
@@ -32,6 +39,7 @@ const FileUpload = ({ onFileUpload }) => {
 
     // You can determine file type and handle accordingly
     if (selectedFile.type === "application/pdf") {
+      console.log("pdf");
       try {
         // Use pdf-lib to get the number of pages in the PDF
         const buffer = await selectedFile.arrayBuffer();
@@ -41,7 +49,34 @@ const FileUpload = ({ onFileUpload }) => {
       } catch (error) {
         console.error("Error reading PDF file:", error);
       }
+    } else if (
+      selectedFile.type ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      selectedFile.type === "application/msword"
+    ) {
+      console.log("doc");
+      // Handle DOCX and DOC files
+      try {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const arrayBuffer = event.target.result;
+          const uint8Array = new Uint8Array(arrayBuffer);
+          const docContent = new TextDecoder("utf-8").decode(uint8Array);
+
+          // Convert DOCX to HTML using mammoth
+          const { value: html } = await mammoth.extractRawText({ arrayBuffer });
+
+          // Count pages based on the structure of HTML converted from DOCX
+          const pageCount = countPagesFromDocxHTML(html);
+          setPages(pageCount);
+          console.log(pageCount);
+        };
+        reader.readAsArrayBuffer(selectedFile);
+      } catch (error) {
+        console.error("Error reading DOCX/DOC file:", error);
+      }
     } else {
+      console.log("image");
       // Handle other file types (images, Word documents, etc.)
       setPages(0); // Set the default value for non-PDF files
     }
@@ -59,6 +94,7 @@ const FileUpload = ({ onFileUpload }) => {
 
     if (droppedFile.type === "application/pdf") {
       try {
+        console.log("pdfdrop");
         const reader = new FileReader();
         reader.onload = async (event) => {
           const pdfBuffer = event.target.result;
@@ -70,9 +106,48 @@ const FileUpload = ({ onFileUpload }) => {
       } catch (error) {
         console.error("Error reading dropped PDF file:", error);
       }
+    } else if (
+      droppedFile.type ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      droppedFile.type === "application/msword"
+    ) {
+      // Handle DOCX and DOC files
+      try {
+        console.log("docdrop");
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const arrayBuffer = event.target.result;
+          const uint8Array = new Uint8Array(arrayBuffer);
+          const docContent = new TextDecoder("utf-8").decode(uint8Array);
+
+          // Convert DOCX to HTML using mammoth
+          const { value: html } = await mammoth.extractRawText({ arrayBuffer });
+
+          // Count pages based on the structure of HTML converted from DOCX
+          const pageCount = countPagesFromDocxHTML(html);
+          setPages(pageCount);
+        };
+        reader.readAsArrayBuffer(droppedFile);
+      } catch (error) {
+        console.error("Error reading DOCX/DOC file:", error);
+      }
     } else {
+      console.log("imagedrop");
       setPages(0);
     }
+  };
+
+  // Function to count pages from HTML converted from DOCX
+  const countPagesFromDocxHTML = (html) => {
+    const charCount = html.length;
+
+    // Assuming an average of 400 characters per page (you can adjust this value)
+    const charsPerPage = 400;
+
+    // Calculate the estimated page count
+    const pageCount = Math.ceil(charCount / charsPerPage);
+
+    return pageCount;
   };
 
   const handleUpload = async () => {
@@ -85,6 +160,7 @@ const FileUpload = ({ onFileUpload }) => {
     const storageRef = ref(storage, `files/${userId}/${file.name}`);
 
     try {
+      setIsLoading(true);
       // Upload the file to Firebase Storage
       await uploadBytes(storageRef, file);
       console.log("File uploaded to Storage");
@@ -116,6 +192,7 @@ const FileUpload = ({ onFileUpload }) => {
         downloadURL,
       });
 
+      setIsLoading(false);
       navigate("/dashboard");
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -136,11 +213,12 @@ const FileUpload = ({ onFileUpload }) => {
         toggleView={toggleView}
       />
       <AsideBar />
-      <main className="ml-60 pt-16 max-h-screen">
+      <main className={`${isHebrew ? "md:mr-60" : "md:ml-60"} max-h-screen`}>
+        <MobileNav />
         <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-lg">
             <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl">
-              Upload File
+              {t("uploadFile")}
             </h1>
 
             <p className="mx-auto mt-4 max-w-md text-center text-gray-500">
@@ -150,7 +228,7 @@ const FileUpload = ({ onFileUpload }) => {
 
             <form className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8">
               <p className="text-center text-lg font-medium">
-                Select or drag and drop file
+                {t("selectFile")}
               </p>
 
               <div>
@@ -174,7 +252,7 @@ const FileUpload = ({ onFileUpload }) => {
                     className="z-20 flex flex-col-reverse items-center justify-center w-full h-full cursor-pointer"
                   >
                     <p className="z-10 text-xs font-light text-center text-gray-500">
-                      Drag & Drop your files here
+                      {t("dropFile")}
                     </p>
                     <svg
                       className="z-10 w-8 h-8 text-indigo-400"
@@ -187,6 +265,11 @@ const FileUpload = ({ onFileUpload }) => {
                   </label>
                 </div>
               </div>
+
+              {/* Display the filename */}
+              {file && (
+                <p className="text-center text-gray-500 mt-2">{file.name}</p>
+              )}
 
               <div>
                 <label htmlFor="password" className="sr-only">
@@ -209,7 +292,7 @@ const FileUpload = ({ onFileUpload }) => {
                 onClick={handleUpload}
                 className="block w-full rounded-lg bg-purple-600 px-5 py-3 text-sm font-medium text-white"
               >
-                Upload
+                {isLoading ? <LoadingOutlined /> : t("upload")}
               </button>
             </form>
           </div>

@@ -2,15 +2,21 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { useTranslation } from "react-i18next";
+import LanguageToggle from "./LanguageToggle";
+import { LoadingOutlined } from "@ant-design/icons";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSignUp = async () => {
     try {
+      setIsLoading(true);
       const auth = getAuth();
       const response = await createUserWithEmailAndPassword(
         auth,
@@ -21,17 +27,23 @@ const SignUp = () => {
       const uid = response.user.uid;
       // If sign-up is successful, store the session in local storage and redirect
       localStorage.setItem("user", JSON.stringify({ email, uid }));
-      navigate("/upload-file");
+      navigate("/");
+      setIsLoading(false);
     } catch (error) {
       setError(error.message);
     }
   };
 
   return (
-    <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full px-4 py-16 sm:px-6 lg:px-8">
+      <div className="flex justify-between items-center mb-4">
+        {/* Move LanguageToggle to the right */}
+        <div className="flex-grow"></div>
+        <LanguageToggle />
+      </div>
       <div className="mx-auto max-w-lg">
         <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl">
-          Get started today
+          {t("getStarted")}
         </h1>
 
         <p className="mx-auto mt-4 max-w-md text-center text-gray-500">
@@ -40,7 +52,7 @@ const SignUp = () => {
         </p>
 
         <form className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8">
-          <p className="text-center text-lg font-medium">Create account</p>
+          <p className="text-center text-lg font-medium">{t("createAcc")}</p>
           {error && <p style={{ color: "red" }}>{error}</p>}
 
           <div>
@@ -52,7 +64,7 @@ const SignUp = () => {
               <input
                 type="email"
                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-                placeholder="Enter email"
+                placeholder={t("enterEmail")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -87,7 +99,7 @@ const SignUp = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-                placeholder="Enter password"
+                placeholder={t("enterPassword")}
               />
 
               <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
@@ -120,13 +132,13 @@ const SignUp = () => {
             onClick={handleSignUp}
             className="block w-full rounded-lg bg-purple-600 px-5 py-3 text-sm font-medium text-white"
           >
-            Sign Up
+            {isLoading ? <LoadingOutlined /> : t("signUp")}
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            No account?
+            {t("haveAccount")}
             <a className="underline" href="/signin">
-              Sign up
+              {t("signIn")}
             </a>
           </p>
         </form>
