@@ -77,7 +77,7 @@ const Dashboard = () => {
       <main className={`${isHebrew ? "md:mr-60" : "md:ml-60"} max-h-screen`}>
         <MobileNav />
         <div className="px-6">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto overflow-y-hidden mt-12">
             <div className="bg-white rounded-3xl p-8 mb-5">
               {isLoading ? (
                 <LoadingOutlined />
@@ -97,9 +97,11 @@ const Dashboard = () => {
                         alt="Safsar X"
                         className="h-[70px] mx-auto"
                       />
-                      <p className="font-bold">{file.name}</p>
-                      <p>
-                        <span className="font-bold">Pages: </span>
+                      <p className="font-bold whitespace-normal whitespace-pre-line text-center">
+                        {file.name.replace(/_/g, "\n")}
+                      </p>
+                      <p className="text-center">
+                        <span className="font-bold">{t("pages")}: </span>
                         {file.pages}
                       </p>
                     </div>
@@ -113,12 +115,35 @@ const Dashboard = () => {
                         className="p-4 bg-white border rounded-xl text-gray-800 space-y-2 flex flex-row mb-4"
                         key={file.name}
                       >
-                        <img
-                          src={getFileImage(file.name)}
-                          alt="Safsar X"
-                          className="h-[30px] mx-auto"
-                        />
-                        {file.name} - Pages: {file.pages}
+                        {/* Column 1: Image */}
+                        <div className="flex-shrink-0">
+                          <img
+                            src={getFileImage(file.name)}
+                            alt="Safsar X"
+                            className="h-[30px] mx-auto"
+                          />
+                        </div>
+
+                        {/* Column 2: Title */}
+                        <div className="flex-grow pl-4">
+                          {/* Display truncated filename on mobile devices */}
+                          <p className="font-bold whitespace-nowrap overflow-hidden overflow-ellipsis sm:hidden">
+                            {file.name.substring(0, 10)}...
+                          </p>
+
+                          {/* Display full filename on larger devices */}
+                          <p className="font-bold hidden sm:block">
+                            {file.name}
+                          </p>
+                        </div>
+
+                        {/* Column 3: Page Numbers */}
+                        <div className="flex-shrink-0">
+                          <p>
+                            <span className="font-bold">{t("pages")}: </span>
+                            {file.pages}
+                          </p>
+                        </div>
                       </li>
                     ))}
                   </ul>

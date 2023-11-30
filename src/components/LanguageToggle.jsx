@@ -24,7 +24,7 @@ const LanguageToggle = () => {
   return (
     <div>
       <button onClick={toggleLanguage}>
-        {currentLanguage === "en" ? "עברית" : "English"}
+        {currentLanguage === "en" ? "🇮🇱 עברית" : "🇺🇸 English"}
       </button>
     </div>
   );

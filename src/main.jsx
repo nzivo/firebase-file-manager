@@ -30,6 +30,7 @@ i18n.use(initReactI18next).init({
         enterPassword: "Enter Password",
         signInAcc: "Sign in to your account",
         createAcc: "Create account",
+        pages: "Pages",
         // Add other English translations here
       },
     },
@@ -56,6 +57,7 @@ i18n.use(initReactI18next).init({
         enterPassword: "הזן את הסיסמה",
         signInAcc: "תתחבר לחשבון שלך",
         createAcc: "צור חשבון",
+        pages: "דפים",
         // Add other Hebrew translations here
       },
     },
