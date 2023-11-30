@@ -3,12 +3,19 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { PDFDocument } from "pdf-lib";
+import { db } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
+import Header from "./Header";
+import AsideBar from "./AsideBar";
+import { List, Grid } from "../assets";
 
 const FileUpload = ({ onFileUpload }) => {
   const [file, setFile] = useState(null);
   const [pages, setPages] = useState(0);
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
+  const [files, setFiles] = useState([]);
+  const [isGridView, setIsGridView] = useState(true);
 
   useEffect(() => {
     // Retrieve userId from localStorage when the component mounts
@@ -74,102 +81,140 @@ const FileUpload = ({ onFileUpload }) => {
       return;
     }
 
-    // Upload the file to Firebase Storage
     const storage = getStorage();
     const storageRef = ref(storage, `files/${userId}/${file.name}`);
-    await uploadBytes(storageRef, file);
 
-    // Get the download URL
-    const downloadURL = await getDownloadURL(storageRef);
+    try {
+      // Upload the file to Firebase Storage
+      await uploadBytes(storageRef, file);
+      console.log("File uploaded to Storage");
 
-    // Notify analytics (replace with your analytics implementation)
-    console.log("File uploaded. Analytics event: FILE_UPLOAD", {
-      userId,
-      file,
-    });
+      // Get the download URL
+      const downloadURL = await getDownloadURL(storageRef);
+      console.log("Download URL obtained:", downloadURL);
 
-    // Callback to parent component
-    // onFileUpload({ file: file.name, pages, downloadURL });
-    navigate("/dashboard");
+      // Store metadata in Firestore (using default database)
+      // const filesCollection = collection(db, `files`);
+      const filesCollection = collection(db, `files/${userId}/userFiles`);
+
+      const fileData = {
+        userId: userId,
+        name: file.name,
+        pages: pages, // Assuming `pages` is the state that holds the number of pages
+        url: downloadURL,
+      };
+
+      console.log("uploading", fileData, filesCollection);
+      // Add a new document with the file metadata
+      await addDoc(filesCollection, fileData);
+      console.log("File metadata added to Firestore");
+
+      // Notify analytics (replace with your analytics implementation)
+      console.log("File uploaded. Analytics event: FILE_UPLOAD", {
+        userId,
+        file,
+        downloadURL,
+      });
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  };
+
+  // Toggle between grid and list views
+  const toggleView = () => {
+    setIsGridView((prevIsGridView) => !prevIsGridView);
   };
 
   return (
-    <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-lg">
-        <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl">
-          Upload File
-        </h1>
+    <div>
+      <Header
+        isGridView={isGridView}
+        Grid={Grid}
+        List={List}
+        toggleView={toggleView}
+      />
+      <AsideBar />
+      <main className="ml-60 pt-16 max-h-screen">
+        <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-lg">
+            <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl">
+              Upload File
+            </h1>
 
-        <p className="mx-auto mt-4 max-w-md text-center text-gray-500">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Obcaecati
-          sunt dolores deleniti inventore quaerat mollitia?
-        </p>
+            <p className="mx-auto mt-4 max-w-md text-center text-gray-500">
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+              Obcaecati sunt dolores deleniti inventore quaerat mollitia?
+            </p>
 
-        <form className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8">
-          <p className="text-center text-lg font-medium">
-            Select or drag and drop file
-          </p>
+            <form className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8">
+              <p className="text-center text-lg font-medium">
+                Select or drag and drop file
+              </p>
 
-          <div>
-            <label htmlFor="email" className="sr-only">
-              File upload
-            </label>
+              <div>
+                <label htmlFor="email" className="sr-only">
+                  File upload
+                </label>
 
-            <div
-              className="relative border border-dashed border-2 border-indigo-600 py-8 rounded-md"
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-            >
-              <input
-                type="file"
-                id="file-upload"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-              <label
-                htmlFor="file-upload"
-                className="z-20 flex flex-col-reverse items-center justify-center w-full h-full cursor-pointer"
-              >
-                <p className="z-10 text-xs font-light text-center text-gray-500">
-                  Drag & Drop your files here
-                </p>
-                <svg
-                  className="z-10 w-8 h-8 text-indigo-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
+                <div
+                  className="relative border border-dashed border-2 border-indigo-600 py-8 rounded-md"
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
                 >
-                  <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
-                </svg>
-              </label>
-            </div>
+                  <input
+                    type="file"
+                    id="file-upload"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="z-20 flex flex-col-reverse items-center justify-center w-full h-full cursor-pointer"
+                  >
+                    <p className="z-10 text-xs font-light text-center text-gray-500">
+                      Drag & Drop your files here
+                    </p>
+                    <svg
+                      className="z-10 w-8 h-8 text-indigo-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
+                    </svg>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="sr-only">
+                  Number of Pages
+                </label>
+
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={pages}
+                    onChange={(e) => setPages(e.target.value)}
+                    className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                    placeholder="Enter number of pages"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleUpload}
+                className="block w-full rounded-lg bg-purple-600 px-5 py-3 text-sm font-medium text-white"
+              >
+                Upload
+              </button>
+            </form>
           </div>
-
-          <div>
-            <label htmlFor="password" className="sr-only">
-              Number of Pages
-            </label>
-
-            <div className="relative">
-              <input
-                type="number"
-                value={pages}
-                onChange={(e) => setPages(e.target.value)}
-                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
-                placeholder="Enter number of pages"
-              />
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleUpload}
-            className="block w-full rounded-lg bg-purple-600 px-5 py-3 text-sm font-medium text-white"
-          >
-            Upload
-          </button>
-        </form>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };

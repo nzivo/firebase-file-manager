@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import { Img, PDF, Doc, List, Grid } from "../assets";
+import Header from "./Header";
+import AsideBar from "./AsideBar";
 
 const Dashboard = () => {
   const [files, setFiles] = useState([]);
   const [userId, setUserId] = useState(null);
+  const [isGridView, setIsGridView] = useState(true);
 
   useEffect(() => {
     // Retrieve userId from localStorage when the component mounts
@@ -14,7 +18,6 @@ const Dashboard = () => {
       setUserId(uid);
     }
   }, []);
-  console.log(userId);
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -34,16 +37,86 @@ const Dashboard = () => {
     fetchFiles();
   }, [userId]);
 
+  // Function to get file image based on file extension
+  const getFileImage = (filename) => {
+    const fileExtension = filename?.split(".").pop();
+    switch (fileExtension?.toLowerCase()) {
+      case "pdf":
+        return PDF;
+      case "doc":
+      case "docx":
+        return Doc;
+      default:
+        return Img;
+    }
+  };
+
+  // Toggle between grid and list views
+  const toggleView = () => {
+    setIsGridView((prevIsGridView) => !prevIsGridView);
+  };
+
   return (
     <div>
-      <h2>User Dashboard</h2>
-      <ul>
-        {files.map((file) => (
-          <li key={file.name}>
-            {file.name} - Pages: {file.pages}
-          </li>
-        ))}
-      </ul>
+      <Header
+        isGridView={isGridView}
+        Grid={Grid}
+        List={List}
+        toggleView={toggleView}
+      />
+      <AsideBar />
+
+      <main className="ml-60 max-h-screen">
+        <div className="px-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl p-8 mb-5">
+              {files.length === 0 ? (
+                <p className="text-center text-gray-500 font-semibold">
+                  Zero files available.
+                </p>
+              ) : isGridView ? (
+                <div className="grid grid-cols-4 gap-4 w-full">
+                  {files.map((file) => (
+                    <div
+                      key={file.name}
+                      className="p-4 bg-white border rounded-xl text-gray-800 space-y-2 items-center"
+                    >
+                      <img
+                        src={getFileImage(file.name)}
+                        alt="Safsar X"
+                        className="h-[70px] mx-auto"
+                      />
+                      <p className="font-bold">{file.name}</p>
+                      <p>
+                        <span className="font-bold">Pages: </span>
+                        {file.pages}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-4 w-full">
+                  <ul className="w-full">
+                    {files.map((file) => (
+                      <li
+                        className="p-4 bg-white border rounded-xl text-gray-800 space-y-2 flex flex-row mb-4"
+                        key={file.name}
+                      >
+                        <img
+                          src={getFileImage(file.name)}
+                          alt="Safsar X"
+                          className="h-[30px] mx-auto"
+                        />
+                        {file.name} - Pages: {file.pages}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
