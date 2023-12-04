@@ -5,3 +5,5 @@ export { default as List } from "./list.png";
 export { default as Grid } from "./grid.png";
 export { default as Upload } from "./upload-file.png";
 export { default as Dashboard } from "./home.png";
+export { default as Israel } from "./Flag_of_Israel.svg";
+export { default as English } from "./Flag_of_the_United_Kingdom.svg";

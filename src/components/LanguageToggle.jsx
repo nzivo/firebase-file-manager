@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { English, Israel } from "../assets";
 
 const LanguageToggle = () => {
   const { i18n } = useTranslation();
@@ -23,8 +24,19 @@ const LanguageToggle = () => {
 
   return (
     <div>
-      <button onClick={toggleLanguage}>
-        {currentLanguage === "en" ? "🇮🇱 עברית" : "🇺🇸 English"}
+      <button
+        onClick={toggleLanguage}
+        style={{ display: "flex", alignItems: "center" }}
+      >
+        {currentLanguage === "en" ? (
+          <>
+            <img src={Israel} alt="🇮🇱" className="w-[18px] mr-4" /> עברית
+          </>
+        ) : (
+          <>
+            <img src={English} alt="🇺🇸" className="w-[18px] mr-4" /> English
+          </>
+        )}
       </button>
     </div>
   );
