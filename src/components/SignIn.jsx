@@ -19,15 +19,13 @@ const SignIn = () => {
       setIsLoading(true);
       const auth = getAuth();
       const response = await signInWithEmailAndPassword(auth, email, password);
-      console.log(response);
-      // Extract UID from the response
       const uid = response.user.uid;
-      // If sign-in is successful, store the session in local storage and redirect
       localStorage.setItem("user", JSON.stringify({ email, uid }));
       navigate("/");
       setIsLoading(false);
     } catch (error) {
-      setError(error.message);
+      setError(error.code);
+      setIsLoading(false);
     }
   };
 
@@ -47,6 +45,8 @@ const SignIn = () => {
           Lorem ipsum dolor sit amet, consectetur adipisicing elit. Obcaecati
           sunt dolores deleniti inventore quaerat mollitia?
         </p>
+
+        {error && <p className="text-center text-red-500">{error}</p>}
 
         <form className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8">
           <p className="text-center text-lg font-medium">{t("signInAcc")}</p>

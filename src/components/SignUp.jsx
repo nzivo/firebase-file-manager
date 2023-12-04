@@ -30,7 +30,8 @@ const SignUp = () => {
       navigate("/");
       setIsLoading(false);
     } catch (error) {
-      setError(error.message);
+      setError(error.code);
+      setIsLoading(false);
     }
   };
 
