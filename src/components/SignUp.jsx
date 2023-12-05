@@ -36,8 +36,8 @@ const SignUp = () => {
       const uid = response.user.uid;
       // If sign-up is successful, store the session in local storage and redirect
       localStorage.setItem("user", JSON.stringify({ email, uid }));
-      navigate("/upload-file");
       setIsLoading(false);
+      navigate("/upload-file");
     } catch (error) {
       setError(error.code);
       setIsLoading(false);
