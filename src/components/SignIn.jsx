@@ -32,6 +32,7 @@ const SignIn = () => {
       localStorage.setItem("user", JSON.stringify({ email, uid }));
       setIsLoading(false);
       navigate("/upload-file");
+      window.location.reload();
     } catch (error) {
       setError(error.code);
       setIsLoading(false);
