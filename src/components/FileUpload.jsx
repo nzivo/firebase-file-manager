@@ -145,7 +145,9 @@ const FileUpload = ({ onFileUpload }) => {
     const charsPerPage = 400;
 
     // Calculate the estimated page count
-    const pageCount = Math.ceil(charCount / charsPerPage);
+    let pageCount = Math.ceil(charCount / charsPerPage);
+
+    pageCount = Math.max(pageCount, 1);
 
     return pageCount;
   };
@@ -281,7 +283,7 @@ const FileUpload = ({ onFileUpload }) => {
                     type="number"
                     value={pages}
                     onChange={(e) => setPages(e.target.value)}
-                    className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                    className="bg-indigo-200 text-indigo-900 w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                     placeholder="Enter number of pages"
                   />
                 </div>

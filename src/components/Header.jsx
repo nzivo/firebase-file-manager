@@ -44,7 +44,7 @@ const Header = ({ isGridView, Grid, List, toggleView }) => {
             </button>
           </div>
           {/* display @username */}
-          <div className="text-lg font-bold">@{userName}</div>
+          <div className="text-indigo-600 text-lg font-bold">@{userName}</div>
           <div>
             <button
               type="button"

@@ -25,6 +25,7 @@ const LanguageToggle = () => {
   return (
     <div>
       <button
+        className="bg-indigo-200 text-indigo-900 p-4"
         onClick={toggleLanguage}
         style={{ display: "flex", alignItems: "center" }}
       >

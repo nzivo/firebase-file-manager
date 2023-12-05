@@ -1,10 +1,11 @@
 // src/components/SignUp.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { useTranslation } from "react-i18next";
 import LanguageToggle from "./LanguageToggle";
 import { LoadingOutlined } from "@ant-design/icons";
+import useAuth from "../hooks/useAuth";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -13,6 +14,14 @@ const SignUp = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
+  const user = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      // User is not authenticated, navigate to the desired route
+      navigate("/upload-file");
+    }
+  }, [user, navigate]);
 
   const handleSignUp = async () => {
     try {
@@ -27,7 +36,7 @@ const SignUp = () => {
       const uid = response.user.uid;
       // If sign-up is successful, store the session in local storage and redirect
       localStorage.setItem("user", JSON.stringify({ email, uid }));
-      navigate("/");
+      navigate("/upload-file");
       setIsLoading(false);
     } catch (error) {
       setError(error.code);
@@ -40,10 +49,10 @@ const SignUp = () => {
       <div className="flex justify-between items-center mb-4">
         {/* Move LanguageToggle to the right */}
         <div className="flex-grow"></div>
-        <LanguageToggle />
       </div>
       <div className="mx-auto max-w-lg">
-        <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl">
+        <LanguageToggle />
+        <h1 className="text-center text-2xl font-bold text-indigo-600 sm:text-3xl pt-4">
           {t("getStarted")}
         </h1>
 
@@ -64,7 +73,7 @@ const SignUp = () => {
             <div className="relative">
               <input
                 type="email"
-                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                className="bg-indigo-200 text-indigo-900 w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                 placeholder={t("enterEmail")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -99,7 +108,7 @@ const SignUp = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
+                className="bg-indigo-200 text-indigo-900 w-full rounded-lg border-gray-200 p-4 pe-12 text-sm shadow-sm"
                 placeholder={t("enterPassword")}
               />
 
