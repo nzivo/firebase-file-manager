@@ -1,9 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import SignUp from "./components/SignUp";
 import SignIn from "./components/SignIn";
 import Dashboard from "./components/Dashboard";
@@ -20,7 +15,7 @@ function App() {
           {/* Redirect to upload-file if user exists in local storage */}
           {user ? (
             <>
-              <Route path="/" element={<Navigate to="/upload-file" />} />
+              <Route path="/" element={<FileUpload />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/upload-file" element={<FileUpload />} />
             </>
