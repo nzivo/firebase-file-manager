@@ -25,7 +25,7 @@ const Header = ({ isGridView, Grid, List, toggleView }) => {
         isHebrew ? "md:left-0 md:right-60" : "md:right-0 md:left-60"
       } top-0 bg-indigo-50 py-3 px-4 h-16`}
     >
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl">
         <div className="flex items-center justify-between">
           <div>
             <button
