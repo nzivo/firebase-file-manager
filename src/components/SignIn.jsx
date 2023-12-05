@@ -6,6 +6,7 @@ import { LoadingOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import LanguageToggle from "./LanguageToggle";
 import useAuth from "../hooks/useAuth";
+import { handleFirebaseError } from "../utils";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -34,7 +35,8 @@ const SignIn = () => {
       navigate("/upload-file");
       window.location.reload();
     } catch (error) {
-      setError(error.code);
+      const handledError = handleFirebaseError(error.code);
+      setError(handledError);
       setIsLoading(false);
     }
   };
@@ -56,10 +58,12 @@ const SignIn = () => {
           sunt dolores deleniti inventore quaerat mollitia?
         </p>
 
-        {error && <p className="text-center text-red-500">{error}</p>}
 
         <form className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8">
-          <p className="text-center text-lg font-medium">{t("signInAcc")}</p>
+          <p className="text-indigo-600 text-center text-lg font-medium">
+            {t("signInAcc")}
+          </p>
+        {error && <p className="text-center text-red-500">{error}</p>}
 
           <div>
             <label htmlFor="email" className="sr-only">

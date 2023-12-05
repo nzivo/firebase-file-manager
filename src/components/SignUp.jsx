@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import LanguageToggle from "./LanguageToggle";
 import { LoadingOutlined } from "@ant-design/icons";
 import useAuth from "../hooks/useAuth";
+import { handleFirebaseError } from "../utils";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -40,7 +41,8 @@ const SignUp = () => {
       navigate("/upload-file");
       window.location.reload();
     } catch (error) {
-      setError(error.code);
+      const handledError = handleFirebaseError(error.code);
+      setError(handledError);
       setIsLoading(false);
     }
   };
@@ -63,7 +65,9 @@ const SignUp = () => {
         </p>
 
         <form className="mb-0 mt-6 space-y-4 rounded-lg p-4 shadow-lg sm:p-6 lg:p-8">
-          <p className="text-center text-lg font-medium">{t("createAcc")}</p>
+          <p className="text-indigo-600 text-center text-lg font-medium">
+            {t("createAcc")}
+          </p>
           {error && <p style={{ color: "red" }}>{error}</p>}
 
           <div>
